@@ -1,0 +1,10 @@
+PRAGMA foreign_keys = ON;
+
+
+DROP TABLE IF EXISTS students;
+
+CREATE TABLE students(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+);
+
