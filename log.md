@@ -17,7 +17,7 @@ Thông tin chung về công việc BTL.
 | ✅ | Tìm dataset | [Predict Students' Dropout and Academic Success](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) |
 | ✅ | Chọn tech stack | Flask (Python), psycopg2-binary (PostgreSQL) |
 | ✅ | Tạo schema | Snowflake schema |
-| ⏳ | Viết script bootstrap | |
-| ⏳ | Viết ETL | |
-| | Chọn tech DSS | |
-| | Xây dựng DSS | |
+| ✅ | Viết script bootstrap | |
+| ✅ | Viết ETL | |
+| ⏳ | Chọn tech DSS | |
+| ⏳ | Xây dựng DSS | |
