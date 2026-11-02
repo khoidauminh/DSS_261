@@ -53,7 +53,8 @@ CREATE TABLE Dim_Socioeconomic (
     Father_occupation_ID INT REFERENCES Parent_Occupation(Parent_occupation_ID),
     Debtor BOOLEAN,
     Tuition_fees_up_to_date BOOLEAN,
-    Scholarship_holder BOOLEAN
+    Scholarship_holder BOOLEAN,
+    Educational_special_needs BOOLEAN
 );
 
 -- Helper tables for table 3
@@ -84,6 +85,8 @@ CREATE TABLE Dim_Academic_Course (
     Application_mode_ID INT REFERENCES Application_Mode(Application_mode_ID),
     Application_order INT,
     Previous_qualification_ID INT REFERENCES Previous_Qualification(Previous_qualification_ID),
+    Previous_qualification_grade NUMERIC(5,3),
+    Admission_grade NUMERIC(5,3),
     Daytime_evening_attendance_ID INT REFERENCES Daytime_evening_attendance(Daytime_evening_attendance_ID)
 );
 
@@ -110,7 +113,7 @@ CREATE TABLE Fact_Academic_Record (
     Socioeconomic_ID INT REFERENCES Dim_Socioeconomic(Socioeconomic_ID),
     Academic_Course_ID INT REFERENCES Dim_Academic_Course(Academic_Course_ID),
     Macroeconomic_ID INT REFERENCES Dim_Macroeconomic(Macroeconomic_ID),
-    
+
     -- 1st Semester Metrics
     CU_1st_sem_credited INT,
     CU_1st_sem_enrolled INT,
@@ -126,7 +129,7 @@ CREATE TABLE Fact_Academic_Record (
     CU_2nd_sem_approved INT,
     CU_2nd_sem_grade NUMERIC(5,2),
     CU_2nd_sem_without_evaluations INT,
-    
+
     Target_Outcome_ID INT REFERENCES Target_Outcome(Target_Outcome_ID)
 );
 

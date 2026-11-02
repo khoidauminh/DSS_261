@@ -17,7 +17,6 @@ PARENT_OCCUPATION: Final = "Parent's occupation"
 
 # Safe merge
 def merge_dicts_strict(d1, d2):
-    
     common_keys = d1.keys() & d2.keys()
     for key in common_keys:
         if d1[key] != d2[key]:
