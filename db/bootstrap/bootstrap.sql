@@ -109,10 +109,10 @@ CREATE TABLE Target_Outcome(
 -- Grain: One row per student's overall record (suitable for the classification target)
 CREATE TABLE Fact_Academic_Record (
     Student_ID SERIAL PRIMARY KEY, 
-    Demographics_ID INT REFERENCES Dim_Demographics(Demographics_ID),
-    Socioeconomic_ID INT REFERENCES Dim_Socioeconomic(Socioeconomic_ID),
-    Academic_Course_ID INT REFERENCES Dim_Academic_Course(Academic_Course_ID),
-    Macroeconomic_ID INT REFERENCES Dim_Macroeconomic(Macroeconomic_ID),
+    Demographics_ID INT REFERENCES Dim_Demographics(Demographics_ID) UNIQUE,
+    Socioeconomic_ID INT REFERENCES Dim_Socioeconomic(Socioeconomic_ID) UNIQUE,
+    Academic_Course_ID INT REFERENCES Dim_Academic_Course(Academic_Course_ID) UNIQUE,
+    Macroeconomic_ID INT REFERENCES Dim_Macroeconomic(Macroeconomic_ID) UNIQUE,
 
     -- 1st Semester Metrics
     CU_1st_sem_credited INT,
