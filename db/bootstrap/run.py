@@ -2,6 +2,9 @@ import psycopg2, json
 import csv
 import pprint
 
+if input("Script will erase database to re-import data. Proceed? (y/N) ") != "y":
+    exit()
+
 from .etl import load
 
 with open("env.json") as env_file:
