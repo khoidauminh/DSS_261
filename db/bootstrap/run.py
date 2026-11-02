@@ -2,7 +2,7 @@ import psycopg2, json
 import csv
 import pprint
 
-from .etl import transform
+from .etl import load
 
 with open("env.json") as env_file:
     conf = json.loads(env_file.read())
@@ -13,7 +13,12 @@ with open("env.json") as env_file:
     with open("db/bootstrap/bootstrap.sql") as bootstrap_script:
         cursor.execute(bootstrap_script.read())
 
+    load.load(cursor)
+
     cursor.close()
+
+    connection.commit()
+
     connection.close()
 
 print("Finished creating the database")

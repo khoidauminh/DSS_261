@@ -267,7 +267,7 @@ RAW_MAP = {
 
     "Gender": {
         "1": "male",
-        "2": "female"
+        "0": "female"
     },
     
     "Scholarship holder": {},

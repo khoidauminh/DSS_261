@@ -36,12 +36,12 @@ CREATE TABLE Dim_Demographics (
 -- Helper tables for table 2
 CREATE TABLE Parent_Occupation(
     Parent_occupation_ID SERIAL PRIMARY KEY,
-    Occupation VARCHAR(50) UNIQUE NOT NULL
+    Occupation VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE Parent_Qualification(
     Parent_qualification_ID SERIAL PRIMARY KEY,
-    Qualification VARCHAR(50) UNIQUE NOT NULL
+    Qualification VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- 2. Dimension: Socioeconomic Status
@@ -59,17 +59,17 @@ CREATE TABLE Dim_Socioeconomic (
 -- Helper tables for table 3
 CREATE TABLE Course(
     Course_ID SERIAL PRIMARY KEY,
-    Course_Name VARCHAR(50) UNIQUE NOT NULL
+    Course VARCHAR(50) UNIQUE NOT NULL
 );
 
 CREATE TABLE Application_Mode(
     Application_mode_ID SERIAL PRIMARY KEY,
-    Application_Mode VARCHAR(50) UNIQUE NOT NULL
+    Application_Mode VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE Previous_Qualification(
     Previous_qualification_ID SERIAL PRIMARY KEY,
-    Previous_qualification VARCHAR(50) UNIQUE NOT NULL
+    Previous_qualification VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE Daytime_Evening_Attendance(
@@ -99,7 +99,7 @@ CREATE TABLE Dim_Macroeconomic (
 -- [Dropout, Enrolled, Graduate]
 CREATE TABLE Target_Outcome(
     Target_Outcome_ID SERIAL PRIMARY KEY,
-    Outcome VARCHAR(50) UNIQUE NOT NULL
+    Target_Outcome VARCHAR(50) UNIQUE NOT NULL
 );
 
 -- 5. Fact Table: Academic Record

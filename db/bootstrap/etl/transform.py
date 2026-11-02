@@ -2,23 +2,30 @@ from typing import Final
 from .extract import EXTRACT_RECORDS, COLUMN_MAP
 
 # Helper/trivial tables
-MARITAL_STATUS: Final = COLUMN_MAP["Marital status"]
-NATIONALITY: Final = COLUMN_MAP["Nationality"]
-PARENT_QUALIFICATION: Final = COLUMN_MAP["Parent's qualification"]
-PARENT_OCCUPATION: Final = COLUMN_MAP["Parent's occupation"]
-COURSE: Final = COLUMN_MAP["Course"]
-APPLICATION_MODE: Final = COLUMN_MAP["Application mode"]
-PREVIOUS_QUALIFICATION: Final = COLUMN_MAP["Previous qualification"]
-DAYTIME_EVENING_ATTENDACE: Final = COLUMN_MAP["Daytime/evening attendance"]
-GENDER: Final = COLUMN_MAP["Gender"]
+Marital_Status: Final = COLUMN_MAP["Marital status"]
+Nationality: Final = COLUMN_MAP["Nationality"]
+Parent_Qualification: Final = COLUMN_MAP["Parent's qualification"]
+Parent_Occupation: Final = COLUMN_MAP["Parent's occupation"]
+Course: Final = COLUMN_MAP["Course"]
+Application_Mode: Final = COLUMN_MAP["Application mode"]
+Previous_Qualification: Final = COLUMN_MAP["Previous qualification"]
+Daytime_Evening_Attendance: Final = COLUMN_MAP["Daytime/evening attendance"]
+Gender: Final = COLUMN_MAP["Gender"]
 
-TARGET_OUTCOME: Final = dict(enumerate(COLUMN_MAP["Target"]))
-TARGET_OUTCOME_INVERT: Final = {value: key for key, value in TARGET_OUTCOME.items()} # To convert Target to its IDs
+Target_Outcome: Final = dict(enumerate(COLUMN_MAP["Target"]))
+TARGET_OUTCOME_INVERT: Final = {value: key for key, value in Target_Outcome.items()} # To convert Target to its IDs
 
 def transform(convert_function, raw_list):
     return list(map(convert_function, raw_list))
 
+foreign_keys: Final = list(range(1, EXTRACT_RECORDS['__count__']+1))
+
 Fact_Academic_Record: Final = {
+    'Demographics_ID': foreign_keys,
+    'Socioeconomic_ID': foreign_keys,
+    'Academic_Course_ID': foreign_keys,
+    'Macroeconomic_ID': foreign_keys,
+
     'CU_1st_sem_credited': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (credited)"]),
     'CU_1st_sem_enrolled': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (enrolled)"]),
     'CU_1st_sem_evaluations': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (evaluations)"]),
