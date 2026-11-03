@@ -8,7 +8,7 @@ if input("Script will erase database to re-import data. Proceed? (y/N) ") != "y"
 from .etl import load
 
 with open("env.json") as env_file:
-    conf = json.loads(env_file.read())
+    conf = json.load(env_file)
     connection = psycopg2.connect(**conf)
 
     cursor = connection.cursor()

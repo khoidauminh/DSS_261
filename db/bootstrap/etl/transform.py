@@ -1,3 +1,13 @@
+"""
+Hướng dẫn đọc ETL
+
+Các biến Mother's Qualification và Father's Qualification được kết hợp thành Parent Qualification.
+Tương tự với Parent Occupation.
+
+Thông tin trong EXTRACT_RECORD sau đó được tách thành các bảng helper, các bảng dimension, và bảng fact.
+Các dữ liệu điểm được chuẩn hoá thành thang 10 và ép kiểu thành dạng float.
+"""
+
 from typing import Final
 from .extract import EXTRACT_RECORDS, COLUMN_MAP
 

@@ -1,3 +1,13 @@
+"""
+Hướng dẫn đọc ETL
+
+Các dữ liệu đã sàng lọc và chuẩn hoá được insert tuần tự vào database. 
+Hàm insert_helpers và insert_tables dự vào tên khoá của các dictionary để tự động nhập cột.
+
+Bảng Fact_Academic_Record được nhập sau cùng do yêu cầu khoá ngoại.
+Các khoá ngoại được tạo tuần tự, do đó không bắt buộc query lại sau khi nhập. 
+"""
+
 from psycopg2.extras import execute_batch
 
 from itertools import count

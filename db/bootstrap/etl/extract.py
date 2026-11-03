@@ -1,3 +1,14 @@
+"""
+Hướng dẫn đọc ETL
+
+Dữ liệu thô được lấy từ `db/bootstrap/data.csv`,
+đọc vào một dict[str, list[str]] (từ điển chứa các list).
+
+Các key đại diện cho các biến và giá trị là danh sách các record.
+
+Dữ liệu thô được ghi vào biến EXTRACT_RECORDS
+"""
+
 # Extraction is run on first import
 
 from functools import reduce
