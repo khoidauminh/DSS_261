@@ -26,7 +26,7 @@ RAW_MAP = {
         "44": "Technological specialization diploma holders",
         "51": "Change of institution/course",
         "53": "Short cycle diploma holders",
-        "57": "Change of institution/course (International"
+        "57": "Change of institution/course (International)"
     },
 
     "Application order": {},

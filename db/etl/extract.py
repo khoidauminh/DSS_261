@@ -15,6 +15,7 @@ from functools import reduce
 from typing import Final
 import json, csv, pprint
 from . import column_map
+from .util import extract
 
 COLUMN_MAP = column_map.RAW_MAP
 
@@ -41,21 +42,6 @@ COLUMN_MAP[PARENT_OCCUPATION] = merge_dicts_strict(COLUMN_MAP[MOTHER_OCCUPATION]
 with open("db/bootstrap/data.csv", encoding="utf-8-sig") as file:
     reader = csv.DictReader(file, delimiter=';')
 
-    def merge(reader):
-        out = {}
-
-        idx = 0
-
-        for row in reader:
-            idx += 1
-            for key, value in row.items():
-                out.setdefault(key, [])
-                out[key].append(value)
-
-        out['__count__'] = idx
-
-        return out
-
-    EXTRACT_RECORDS: Final = merge(reader)
+    EXTRACT_RECORDS: Final = extract(reader)
 
 print("[ETL] Finished extracting the csv into a raw data structure")

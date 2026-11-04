@@ -10,6 +10,7 @@ Các dữ liệu điểm được chuẩn hoá thành thang 10 và ép kiểu th
 
 from typing import Final
 from .extract import EXTRACT_RECORDS, COLUMN_MAP
+from .util import transform
 
 # Helper/trivial tables
 Marital_Status: Final = COLUMN_MAP["Marital status"]
@@ -24,9 +25,6 @@ Gender: Final = COLUMN_MAP["Gender"]
 
 Target_Outcome: Final = dict(enumerate(COLUMN_MAP["Target"]))
 TARGET_OUTCOME_INVERT: Final = {value: key for key, value in Target_Outcome.items()} # To convert Target to its IDs
-
-def transform(convert_function, raw_list):
-    return list(map(convert_function, raw_list))
 
 foreign_keys: Final = list(range(1, EXTRACT_RECORDS['__count__']+1))
 

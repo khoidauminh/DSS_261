@@ -26,11 +26,13 @@ CREATE TABLE Gender(
 -- 1. Dimension: Demographics
 CREATE TABLE Dim_Demographics (
     Demographics_ID SERIAL PRIMARY KEY,
-    Marital_status_ID INT REFERENCES Marital_Status(Marital_Status_ID),
+    Marital_status_ID INT REFERENCES Marital_Status(Marital_Status_ID) DEFAULT 1,
     Nationality_ID INT REFERENCES Nationality(Nationality_ID),
-    Displaced BOOLEAN,
+    Displaced BOOLEAN DEFAULT FALSE,
     Gender_ID INT REFERENCES Gender(Gender_ID),
-    Age_at_enrollment INT
+    Age_at_enrollment INT,
+
+    CONSTRAINT age_check CHECK (Age_at_enrollment > 0)
 );
 
 -- Helper tables for table 2
@@ -47,14 +49,14 @@ CREATE TABLE Parent_Qualification(
 -- 2. Dimension: Socioeconomic Status
 CREATE TABLE Dim_Socioeconomic (
     Socioeconomic_ID SERIAL PRIMARY KEY,
-    Mother_qualification_ID INT REFERENCES Parent_Qualification(Parent_qualification_ID),
-    Father_qualification_ID INT REFERENCES Parent_Qualification(Parent_qualification_ID),
-    Mother_occupation_ID INT REFERENCES Parent_Occupation(Parent_occupation_ID),
-    Father_occupation_ID INT REFERENCES Parent_Occupation(Parent_occupation_ID),
-    Debtor BOOLEAN,
-    Tuition_fees_up_to_date BOOLEAN,
-    Scholarship_holder BOOLEAN,
-    Educational_special_needs BOOLEAN
+    Mother_qualification_ID INT REFERENCES Parent_Qualification(Parent_qualification_ID) DEFAULT 34,
+    Father_qualification_ID INT REFERENCES Parent_Qualification(Parent_qualification_ID) DEFAULT 34,
+    Mother_occupation_ID INT REFERENCES Parent_Occupation(Parent_occupation_ID) DEFAULT 99,
+    Father_occupation_ID INT REFERENCES Parent_Occupation(Parent_occupation_ID) DEFAULT 99,
+    Debtor BOOLEAN DEFAULT FALSE,
+    Tuition_fees_up_to_date BOOLEAN DEFAULT TRUE,
+    Scholarship_holder BOOLEAN DEFAULT FALSE,
+    Educational_special_needs BOOLEAN DEFAULT FALSE
 );
 
 -- Helper tables for table 3
@@ -85,9 +87,11 @@ CREATE TABLE Dim_Academic_Course (
     Application_mode_ID INT REFERENCES Application_Mode(Application_mode_ID),
     Application_order INT,
     Previous_qualification_ID INT REFERENCES Previous_Qualification(Previous_qualification_ID),
-    Previous_qualification_grade NUMERIC(5,3),
+    Previous_qualification_grade NUMERIC(5,3) DEFAULT 12,
     Admission_grade NUMERIC(5,3),
-    Daytime_evening_attendance_ID INT REFERENCES Daytime_evening_attendance(Daytime_evening_attendance_ID)
+    Daytime_evening_attendance_ID INT REFERENCES Daytime_evening_attendance(Daytime_evening_attendance_ID),
+
+    CONSTRAINT grade_check CHECK (Previous_qualification_grade >= 0.0 AND Previous_qualification_grade <= 10.0 AND Admission_grade >= 0.0 AND Admission_grade <= 10.0)
 );
 
 -- 4. Dimension: Macroeconomic Factors
@@ -95,7 +99,13 @@ CREATE TABLE Dim_Macroeconomic (
     Macroeconomic_ID SERIAL PRIMARY KEY,
     Unemployment_rate NUMERIC(5,2),
     Inflation_rate NUMERIC(5,2),
-    GDP NUMERIC(5,2)
+    GDP NUMERIC(5,2),
+
+    CONSTRAINT rate_check CHECK (
+        Unemployment_rate >= -100.0 AND Unemployment_rate <= 100.0 AND
+        Inflation_rate >= -100.0 AND Inflation_rate <= 100.0 AND
+        GDP >= 0.0
+    )
 );
 
 -- Helper tables for table 5
@@ -130,7 +140,26 @@ CREATE TABLE Fact_Academic_Record (
     CU_2nd_sem_grade NUMERIC(5,2),
     CU_2nd_sem_without_evaluations INT,
 
-    Target_Outcome_ID INT REFERENCES Target_Outcome(Target_Outcome_ID)
+    Target_Outcome_ID INT REFERENCES Target_Outcome(Target_Outcome_ID) DEFAULT 1,
+
+    CONSTRAINT grade_check CHECK (
+        CU_1st_sem_grade >= 0.0 AND CU_1st_sem_grade <= 10.0 AND
+        CU_2nd_sem_grade >= 0.0 AND CU_2nd_sem_grade <= 10.0
+    ),
+
+    CONSTRAINT units_check CHECK (
+        CU_1st_sem_credited >= 0 AND
+        CU_1st_sem_enrolled >= 0 AND
+        CU_1st_sem_evaluations >= 0 AND
+        CU_1st_sem_approved >= 0 AND
+        CU_1st_sem_without_evaluations >= 0 AND
+
+        CU_2nd_sem_credited >= 0 AND
+        CU_2nd_sem_enrolled >= 0 AND
+        CU_2nd_sem_evaluations >= 0 AND
+        CU_2nd_sem_approved >= 0 AND
+        CU_2nd_sem_without_evaluations >= 0
+    )
 );
 
 -- Indexes to optimize OLAP and DSS aggregation queries

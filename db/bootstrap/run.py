@@ -5,7 +5,7 @@ import pprint
 if input("Script will erase database to re-import data. Proceed? (y/N) ") != "y":
     exit()
 
-from .etl import load
+from ..etl import load
 
 with open("env.json") as env_file:
     conf = json.load(env_file)
