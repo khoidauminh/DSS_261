@@ -91,7 +91,12 @@ CREATE TABLE Dim_Academic_Course (
     Admission_grade NUMERIC(5,3),
     Daytime_evening_attendance_ID INT REFERENCES Daytime_evening_attendance(Daytime_evening_attendance_ID),
 
-    CONSTRAINT grade_check CHECK (Previous_qualification_grade >= 0.0 AND Previous_qualification_grade <= 10.0 AND Admission_grade >= 0.0 AND Admission_grade <= 10.0)
+    CONSTRAINT grade_check CHECK (
+        Previous_qualification_grade >= 0.0 AND 
+        Previous_qualification_grade <= 10.0 AND 
+        Admission_grade >= 0.0 AND 
+        Admission_grade <= 10.0
+    )
 );
 
 -- 4. Dimension: Macroeconomic Factors
@@ -129,7 +134,7 @@ CREATE TABLE Fact_Academic_Record (
     CU_1st_sem_enrolled INT,
     CU_1st_sem_evaluations INT,
     CU_1st_sem_approved INT,
-    CU_1st_sem_grade NUMERIC(5,2),
+    CU_1st_sem_grade NUMERIC(5,3),
     CU_1st_sem_without_evaluations INT,
     
     -- 2nd Semester Metrics
@@ -137,7 +142,7 @@ CREATE TABLE Fact_Academic_Record (
     CU_2nd_sem_enrolled INT,
     CU_2nd_sem_evaluations INT,
     CU_2nd_sem_approved INT,
-    CU_2nd_sem_grade NUMERIC(5,2),
+    CU_2nd_sem_grade NUMERIC(5,3),
     CU_2nd_sem_without_evaluations INT,
 
     Target_Outcome_ID INT REFERENCES Target_Outcome(Target_Outcome_ID) DEFAULT 1,

@@ -1,5 +1,7 @@
 from ..repository import fact_academic_record
-from ..dto.student_record import StudentRecordAll
+from ..validator.student_record import StudentRecordAll
+from ..validator import student_record_query 
+
 from ..util.response import Response
 
 def _transform(convert_function, raw_list):
@@ -13,6 +15,12 @@ def _transmute(records: list[dict[str, str]]) -> dict[str, list]:
             out.setdefault(key, []).append(record.get(key, None))
 
     return out
+
+def query_for_records(query: dict) -> Response:
+    if isinstance(res := student_record_query.parse(query), Response):
+        return res
+
+    return fact_academic_record.query_for_records(**res)
 
 def import_new_records(list_of_dicts: list[dict[str, str]]) -> Response:
     dict_of_lists = _transmute(list_of_dicts)

@@ -1,6 +1,6 @@
 from typing import Final
 
-from ..util.response import Response
+from ..util.response import Response, ResponseCode
 
 # Set of required keys 
 StudentRecordRequired: Final[set[str]] = {
@@ -12,7 +12,7 @@ StudentRecordRequired: Final[set[str]] = {
     "previous_qualification_grade",
     "nationality_id",
     "admission_grade",
-    "gender",
+    "gender_id",
     "age_at_enrollment",
     "cu_1st_sem_credited",
     "cu_1st_sem_enrolled",
@@ -49,12 +49,18 @@ StudentRecordAll: Final[set[str]] = StudentRecordOptional.union(StudentRecordReq
 
 def validate(record: dict) -> Response | None:
     input_keys: Final = record.keys()
+    passed = set()
 
     for key in input_keys:
         if key not in StudentRecordAll:
-            return Response(400, f'Invalid key "{key}"') 
+            return Response({}, ResponseCode.INSERT_INVALID_KEY, f'Invalid key "{key}"')
+
+        if key in passed:
+            return Response({}, ResponseCode.INSERT_DUPLICATE, f'Duplicate "{key}"')
+
+        passed.add(key)
 
     if missing_keys := StudentRecordRequired - input_keys:
-        return Response(400, f'Missing the following keys:\n\t{'\n\t'.join(sorted(missing_keys))}')
+        return Response({}, ResponseCode.INSERT_MISSING_REQUIRED_KEYS, f'Missing the following keys:\n\t{'\n\t'.join(sorted(missing_keys))}')
         
     return None

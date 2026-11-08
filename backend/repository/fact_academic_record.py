@@ -2,7 +2,7 @@ from psycopg2.extras import execute_values
 
 from typing import Final
 from .base import _CURSOR, _CONNECTION
-from ..util.response import Response
+from ..util.response import Response, ResponseCode
 
 def _insert_into_table(cursor, records, keys, table_name, primary_key_name=None):
     keys_to_use: Final = [k for k in keys if k in records]
@@ -17,6 +17,42 @@ def _insert_into_table(cursor, records, keys, table_name, primary_key_name=None)
     insert_query += ';'
     
     return execute_values(cursor, insert_query, rows, fetch=True)
+
+def ping() -> Response:
+    try:
+        _CURSOR.execute("SELECT 1;")
+    except Exception as e:
+        return Response({}, ResponseCode.INTERNAL_ERROR, f'{e}')
+
+    return Response({}, ResponseCode.OK, "")
+
+def query_for_records(fields: set[str], filters: list[tuple[str, list]], page_num: int, page_size: int) -> Response:
+    select_str = f"""
+    SELECT {",".join(fields)} FROM
+        Fact_Academic_Record 
+        NATURAL JOIN Dim_Demographics
+        NATURAL JOIN Dim_Socioeconomic
+        NATURAL JOIN Dim_Academic_Course
+        NATURAL JOIN Dim_Macroeconomic
+        NATURAL JOIN Target_Outcome
+    """
+
+    where_clauses = f"WHERE {" AND ".join(map(lambda x: x[0], filters))}"
+    arguments = sum(map(lambda x: x[1], filters), ())
+
+    final_query = select_str + where_clauses + ';'
+
+    print(final_query)
+    print(arguments)
+
+    try:
+        _CURSOR.execute(final_query, arguments)
+        res = _CURSOR.fetchall()
+        
+    except Exception as e:
+        return Response({}, ResponseCode.INTERNAL_ERROR, f"An unkown error has occured: {e}")
+
+    return Response(res, ResponseCode.OK, "")
 
 def import_new_records(records: dict[str, list]) -> Response:
     try:
@@ -111,7 +147,7 @@ def import_new_records(records: dict[str, list]) -> Response:
                 'target_outcome_id',
             ],
             "Fact_Academic_Record",
-            "*"
+            "student_id"
         )
 
         # _CONNECTION.rollback() # FOR TESTING
@@ -120,6 +156,6 @@ def import_new_records(records: dict[str, list]) -> Response:
     except Exception as e:
         _CONNECTION.rollback()
         print(f"Error {e}")
-        return Response(500)
+        return Response({}, ResponseCode.INTERNAL_ERROR, f"{e}")
 
-    return Response(200, returning)
+    return Response(returning, ResponseCode.OK, "")

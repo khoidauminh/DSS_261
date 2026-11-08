@@ -38,6 +38,12 @@ python -m pip install -r requirements.txt
 python -m db.bootstrap.run
 ```
 
+### 5. Chạy backend [Hướng dẫn API](backend/API.md)
+
+```py
+python -m backend.server
+```
+
 ## FRONTEND
 
 TODO
