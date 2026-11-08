@@ -69,7 +69,7 @@ Ví dụ:
 
 #### 400
 
-Sai tên trường
+Sai tên trường:
 
 ```json
 {
@@ -79,7 +79,7 @@ Sai tên trường
 }
 ```
 
-Thiếu các trường bắt buộc
+Thiếu các trường bắt buộc:
 
 ```json
 {
@@ -91,7 +91,7 @@ Thiếu các trường bắt buộc
 
 #### 500
 
-Lỗi khác
+Lỗi khác:
 
 ```json
 {
@@ -195,7 +195,7 @@ Lấy danh sách `student_id` và `cu_1st_sem_grade` lọc theo giới tính 0 (
 
 #### 400
 
-Không có trường type trong filter
+Không có trường type trong filter:
 
 ```json
 {
@@ -205,7 +205,7 @@ Không có trường type trong filter
 }
 ```
 
-Filter type values nhưng trường value là list rỗng
+Filter type values nhưng trường value là list rỗng:
 
 ```json
 {
@@ -215,7 +215,7 @@ Filter type values nhưng trường value là list rỗng
 }
 ```
 
-Thiếu trường left, right hoặc cả hai
+Thiếu trường left, right hoặc cả hai:
 
 ```json
 {
@@ -225,7 +225,7 @@ Thiếu trường left, right hoặc cả hai
 }
 ```
 
-Sai tên cột trong filter
+Sai tên cột trong filter:
 
 ```json
 {
@@ -235,6 +235,8 @@ Sai tên cột trong filter
 }
 ```
 
+Sai tên kiểu filter:
+
 ```json
 {
     "code": "QUERY_INVALID_GENERIC",
@@ -243,7 +245,7 @@ Sai tên cột trong filter
 }
 ```
 
-Sai tên cột trong fields
+Sai tên cột trong fields:
 
 ```json
 {
@@ -253,7 +255,7 @@ Sai tên cột trong fields
 }
 ```
 
-Lỗi khác
+Lỗi khác:
 
 ```json
 {
