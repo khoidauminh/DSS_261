@@ -15,7 +15,7 @@ def hello():
     except:
         return "Name not found", 400
 
-from .controller import fact_academic_record as controller_far
+from .controller import fact_academic_record as controller_far, olap
 
 @APP.route('/records', methods=['POST'])
 def records_insert():
@@ -24,6 +24,10 @@ def records_insert():
 @APP.route('/records/query', methods=['POST'])
 def records_get():
     return controller_far.query_for_records(request.get_json()).into_response()
+
+@APP.route('/olap/course', methods=['GET'])
+def olap_on_course():
+    return olap.olap_on_course(request.args['course_ids']).into_response()
 
 from .repository import fact_academic_record as repo_far
 

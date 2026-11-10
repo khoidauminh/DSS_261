@@ -42,7 +42,7 @@ StudentRecordOptional: Final[set[str]] = {
     "unemployment_rate", # default 0
     "inflation_rate", # default 0
     "gdp", # default null
-    "target", # default enrolled
+    "target_outcome_id", # default enrolled
 }
 
 StudentRecordAll: Final[set[str]] = StudentRecordOptional.union(StudentRecordRequired)

@@ -26,7 +26,7 @@ def ping() -> Response:
 
     return Response({}, ResponseCode.OK, "")
 
-def query_for_records(fields: set[str], filters: list[tuple[str, list]], page_num: int, page_size: int) -> Response:
+def query_for_records(fields: list[str], filters: list[tuple[str, list]], page_num: int = 0, page_size: int = 50) -> Response:
     select_str = f"""
     SELECT {",".join(fields)} FROM
         Fact_Academic_Record 
@@ -53,6 +53,19 @@ def query_for_records(fields: set[str], filters: list[tuple[str, list]], page_nu
         return Response({}, ResponseCode.INTERNAL_ERROR, f"An unkown error has occured: {e}")
 
     return Response(res, ResponseCode.OK, "")
+
+CACHED_RECORDS_COUNT: int | None = None
+
+def get_records_count() -> int:
+    global CACHED_RECORDS_COUNT
+
+    if CACHED_RECORDS_COUNT:
+        return CACHED_RECORDS_COUNT
+
+    _CURSOR.execute("SELECT COUNT(*) FROM Fact_Academic_Record;")
+    CACHED_RECORDS_COUNT = int(_CURSOR.fetchall()[0][0])
+
+    return CACHED_RECORDS_COUNT
 
 def import_new_records(records: dict[str, list]) -> Response:
     try:
@@ -157,5 +170,9 @@ def import_new_records(records: dict[str, list]) -> Response:
         _CONNECTION.rollback()
         print(f"Error {e}")
         return Response({}, ResponseCode.INTERNAL_ERROR, f"{e}")
+
+    # Remove cached records count
+    global CACHED_RECORDS_COUNT
+    CACHED_RECORDS_COUNT = None
 
     return Response(returning, ResponseCode.OK, "")

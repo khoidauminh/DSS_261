@@ -18,8 +18,6 @@ def _parse_filter(field_name: str, filter_json: dict) -> Response | tuple[str, t
             except: 
                 return Response({}, ResponseCode.INTERNAL_ERROR, "An unknown error has occured")
 
-            print(f"{inverted=}")
-
             return ("NOT (%s)" if inverted else "%s") % (f"{field_name} >= %s AND {field_name} <= %s"), (left, right,)
 
         case 'values':
@@ -40,7 +38,7 @@ def _parse_filter(field_name: str, filter_json: dict) -> Response | tuple[str, t
     return Response({}, ResponseCode.INTERNAL_ERROR, "An unknown error has occured")
 
 def parse(query: dict) -> Response | dict:
-    fields: set[str] = set()
+    fields: list[str] = []
     filters: list[tuple[str, tuple]] = []
 
     try:
@@ -57,7 +55,7 @@ def parse(query: dict) -> Response | dict:
             if k in fields:
                 return Response({}, ResponseCode.QUERY_DUPLICATE, f"Key {k} specified twice in query")
 
-            fields.add(k)
+            fields.append(k)
 
     if filter_list := query.get('filters', None):
         for k, v in filter_list.items():
