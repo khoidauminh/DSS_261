@@ -39,8 +39,7 @@ Fact_Academic_Record: Final = {
     'CU_1st_sem_evaluations': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (evaluations)"]),
     'CU_1st_sem_approved': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (approved)"]),
 
-    # Normalise grade to 10-point scale
-    'CU_1st_sem_grade': transform(lambda x: float(x) * 10.0 / 20.0, EXTRACT_RECORDS["Curricular units 1st sem (grade)"]),
+    'CU_1st_sem_grade': transform(lambda x: float(x), EXTRACT_RECORDS["Curricular units 1st sem (grade)"]),
     
     'CU_1st_sem_without_evaluations': transform(int, EXTRACT_RECORDS["Curricular units 1st sem (without evaluations)"]),
     'CU_2nd_sem_credited': transform(int, EXTRACT_RECORDS["Curricular units 2nd sem (credited)"]),
@@ -48,8 +47,7 @@ Fact_Academic_Record: Final = {
     'CU_2nd_sem_evaluations': transform(int, EXTRACT_RECORDS["Curricular units 2nd sem (evaluations)"]),
     'CU_2nd_sem_approved': transform(int, EXTRACT_RECORDS["Curricular units 2nd sem (approved)"]),
 
-    # Normalise grade to 10-point scale
-    'CU_2nd_sem_grade': transform(lambda x: float(x) * 10.0 / 20.0, EXTRACT_RECORDS["Curricular units 2nd sem (grade)"]),
+    'CU_2nd_sem_grade': transform(lambda x: float(x), EXTRACT_RECORDS["Curricular units 2nd sem (grade)"]),
     
     'CU_2nd_sem_without_evaluations': transform(int, EXTRACT_RECORDS["Curricular units 2nd sem (without evaluations)"]),
     'Target_Outcome_ID': transform(lambda x: TARGET_OUTCOME_INVERT[x], EXTRACT_RECORDS["Target"]),
@@ -80,9 +78,8 @@ Dim_Academic_Course: Final = {
     'Application_order': transform(int, EXTRACT_RECORDS["Application order"]),
     'Previous_qualification_ID': transform(int, EXTRACT_RECORDS["Previous qualification"]),
 
-    # Normalise grade to 10-point scale
-    'Previous_qualification_grade': transform(lambda x: float(x) * 10.0 / 200.0, EXTRACT_RECORDS["Previous qualification (grade)"]),
-    'Admission_grade': transform(lambda x: float(x) * 10.0 / 200.0, EXTRACT_RECORDS['Admission grade']),
+    'Previous_qualification_grade': transform(lambda x: float(x), EXTRACT_RECORDS["Previous qualification (grade)"]),
+    'Admission_grade': transform(lambda x: float(x), EXTRACT_RECORDS['Admission grade']),
     
     'Daytime_evening_attendance_ID': transform(int, EXTRACT_RECORDS["Daytime/evening attendance\t"]), # Has a tabulator character in the csv
 }
