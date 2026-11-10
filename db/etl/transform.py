@@ -28,6 +28,15 @@ TARGET_OUTCOME_INVERT: Final = {value: key for key, value in Target_Outcome.item
 
 foreign_keys: Final = list(range(1, EXTRACT_RECORDS['__count__']+1))
 
+def to_bool(x: str) -> bool:
+    match x.strip():
+        case '1':
+            return True
+        case '0':
+            return False
+        
+    raise ValueError(f'Invalid value "{x}": must be 0 or 1')
+
 Fact_Academic_Record: Final = {
     'Demographics_ID': foreign_keys,
     'Socioeconomic_ID': foreign_keys,
@@ -56,8 +65,9 @@ Fact_Academic_Record: Final = {
 Dim_Demographics: Final = {
     'Marital_status_ID': transform(int, EXTRACT_RECORDS["Marital status"]),
     'Nationality_ID': transform(int, EXTRACT_RECORDS["Nacionality"]), # Nacionality because the csv has that typo
-    'Displaced': transform(bool, EXTRACT_RECORDS["Displaced"]),
+    'Displaced': transform(to_bool, EXTRACT_RECORDS["Displaced"]),
     'Gender_ID': transform(int, EXTRACT_RECORDS["Gender"]),
+    'International': transform(to_bool, EXTRACT_RECORDS['International']),
     'Age_at_enrollment': transform(int, EXTRACT_RECORDS["Age at enrollment"]),
 }
 
@@ -66,10 +76,10 @@ Dim_Socioeconomic: Final = {
     'Father_qualification_ID': transform(int, EXTRACT_RECORDS["Father's qualification"]),
     'Mother_occupation_ID': transform(int, EXTRACT_RECORDS["Mother's occupation"]),
     'Father_occupation_ID': transform(int, EXTRACT_RECORDS["Father's occupation"]),
-    'Debtor': transform(bool, EXTRACT_RECORDS["Debtor"]),
-    'Tuition_fees_up_to_date': transform(bool, EXTRACT_RECORDS["Tuition fees up to date"]),
-    'Scholarship_holder': transform(bool, EXTRACT_RECORDS["Scholarship holder"]),
-    'Educational_special_needs': transform(bool, EXTRACT_RECORDS["Educational special needs"])
+    'Debtor': transform(to_bool, EXTRACT_RECORDS["Debtor"]),
+    'Tuition_fees_up_to_date': transform(to_bool, EXTRACT_RECORDS["Tuition fees up to date"]),
+    'Scholarship_holder': transform(to_bool, EXTRACT_RECORDS["Scholarship holder"]),
+    'Educational_special_needs': transform(to_bool, EXTRACT_RECORDS["Educational special needs"])
 }
 
 Dim_Academic_Course: Final = {

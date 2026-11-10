@@ -31,6 +31,7 @@ CREATE TABLE Dim_Demographics (
     Displaced BOOLEAN DEFAULT FALSE,
     Gender_ID INT REFERENCES Gender(Gender_ID),
     Age_at_enrollment INT,
+    International BOOL DEFAULT FALSE,
 
     CONSTRAINT age_check CHECK (Age_at_enrollment > 0)
 );
