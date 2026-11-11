@@ -25,7 +25,7 @@ def records_insert():
 def records_get():
     return controller_far.query_for_records(request.get_json()).into_response()
 
-@APP.route('/olap', methods=['POST'])
+@APP.route('/records/olap', methods=['POST'])
 def olap_on_course():
     return olap.olap_generic(request.get_json()).into_response()
 

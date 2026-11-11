@@ -264,3 +264,138 @@ Lỗi khác:
     "message": "An unkown error has occured: operator does not exist: integer = text\nLINE 9:     WHERE gender_id = ANY(ARRAY['range']) AND NOT (age_at_en...\n                            ^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n"
 }
 ```
+
+## POST /records/olap
+
+API này dùng để tính toán, cộng gộp các records, chủ yếu dùng để tính tỷ lệ bỏ học.
+
+### Input
+
+Đầu vào giống như API /records/query, nhưng không có trường 'fields', các trường field được hardcode vào server.
+
+```json
+{
+    "stats_only": true,
+    "filters": {
+        "debtor": {
+            "type": "values",
+            "values": [false]
+        }
+    }
+}
+```
+
+Khi `stats_only` là `true`, server sẽ không trả về các record được tìm thấy mà chỉ trả về kết quả tính toán tỷ lệ bỏ học.
+
+### Ouput
+
+#### 200
+
+Khi `stats_only` là true:
+
+```json
+{
+    "code": "OK",
+    "data": {
+        "stats": {
+            "count": 3921,
+            "dropout_rate": 0.28283601122162716,
+            "dropouts": 1109,
+            "enrolled": 704
+        }
+    },
+    "message": ""
+}
+```
+
+Khi `stats_only` là false:
+
+```json
+{
+    "code": "OK",
+    "data": {
+        "field_order": [
+            "cu_1st_sem_approved",
+            "cu_1st_sem_credited",
+            "cu_1st_sem_enrolled",
+            "cu_1st_sem_evaluations",
+            "cu_1st_sem_grade",
+            "cu_1st_sem_without_evaluations",
+            "cu_2nd_sem_approved",
+            "cu_2nd_sem_credited",
+            "cu_2nd_sem_enrolled",
+            "cu_2nd_sem_evaluations",
+            "cu_2nd_sem_grade",
+            "cu_2nd_sem_without_evaluations",
+            "previous_qualification_grade",
+            "admission_grade",
+            "target_outcome_id"
+        ],
+        "records": [
+            [
+                0,
+                0,
+                0,
+                0,
+                "0.000",
+                0,
+                0,
+                0,
+                0,
+                0,
+                "0.000",
+                0,
+                "122.000",
+                "127.300",
+                0
+            ],
+            [
+                6,
+                0,
+                6,
+                6,
+                "14.000",
+                0,
+                6,
+                0,
+                6,
+                6,
+                "13.667",
+                0,
+                "160.000",
+                "142.500",
+                1
+            ],
+
+            ...
+
+            [
+                6,
+                0,
+                6,
+                8,
+                "11.667",
+                0,
+                6,
+                0,
+                6,
+                6,
+                "13.000",
+                0,
+                "152.000",
+                "152.000",
+                1
+            ]
+        ],
+        "stats": {
+            "count": 3921,
+            "dropout_rate": 0.28283601122162716,
+            "dropouts": 1109,
+            "enrolled": 704
+        }
+    },
+    "message": ""
+}
+```
+
+`field_order` cho biết thứ tự các trường trong mỗi record.
