@@ -28,36 +28,28 @@ ReturningObject: Final = [
 ]
 
 ReturningObjectMap: Final = {name: index for index, name in enumerate(ReturningObject)}
+TargetOutCome: Final = ReturningObjectMap['target_outcome_id']
 
-def olap_on_course(course_ids: list[int]) -> Response:
+def olap_generic(filters: dict, stats_only: bool) -> Response:
     returning = query_for_records({
         "fields": ReturningObject,
-        "filters": {
-            "course_id": {
-                "type": 'values',
-                "values": course_ids
-            }
-        }
+        "filters": filters
     })
-
+    
     if returning.response_code != ResponseCode.OK:
         return returning
 
-    data = [
-        {
-            name: record[index] for name, index in ReturningObjectMap.items()
-        }
-        for record in returning.data
-    ]
+    data = returning.data
 
     count = len(data)
     dropouts = 0
     enrolled = 0
+
     for record in data:
-        if record['target_outcome_id'] == 0:
+        if record[TargetOutCome] == 0:
             dropouts += 1
 
-        if record['target_outcome_id'] == 2:
+        if record[TargetOutCome] == 2:
             enrolled += 1
 
     stats = {
@@ -67,5 +59,13 @@ def olap_on_course(course_ids: list[int]) -> Response:
 
         'dropout_rate': dropouts / count
     }
+
+    out: dict = {"stats": stats}
+
+    if not stats_only:
+        out.update({
+            'records': data,
+            'field_order': ReturningObject
+        })
         
-    return Response({"records": data, "stats": stats}, ResponseCode.OK, "")
+    return Response(out, ResponseCode.OK, "")

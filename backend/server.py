@@ -25,9 +25,9 @@ def records_insert():
 def records_get():
     return controller_far.query_for_records(request.get_json()).into_response()
 
-@APP.route('/olap/course', methods=['GET'])
+@APP.route('/olap', methods=['POST'])
 def olap_on_course():
-    return olap.olap_on_course(request.args['course_ids']).into_response()
+    return olap.olap_generic(request.get_json()).into_response()
 
 from .repository import fact_academic_record as repo_far
 

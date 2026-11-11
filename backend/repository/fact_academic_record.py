@@ -50,6 +50,7 @@ def query_for_records(fields: list[str], filters: list[tuple[str, list]], page_n
         res = _CURSOR.fetchall()
         
     except Exception as e:
+        _CONNECTION.rollback()
         return Response({}, ResponseCode.INTERNAL_ERROR, f"An unkown error has occured: {e}")
 
     return Response(res, ResponseCode.OK, "")
