@@ -389,9 +389,17 @@ Khi `stats_only` là false:
         ],
         "stats": {
             "count": 3921,
-            "dropout_rate": 0.28283601122162716,
+            "dropout_rate": 0.2828,
             "dropouts": 1109,
-            "enrolled": 704
+            "graduated": 2108,
+            "graduation_rate": 0.5376,
+            "enrolled": 704,
+            "enrolled_rate": 0.1795,
+            "avg_admission_grade": 127.14,
+            "avg_1st_sem_grade": 10.89,
+            "avg_2nd_sem_grade": 10.58,
+            "avg_1st_sem_approval_rate": 0.7812,
+            "avg_2nd_sem_approval_rate": 0.7489
         }
     },
     "message": ""
@@ -399,3 +407,149 @@ Khi `stats_only` là false:
 ```
 
 `field_order` cho biết thứ tự các trường trong mỗi record.
+
+---
+
+## POST /records/olap/cube (OLAP Đa chiều - Roll-up / Drill-down / Slice & Dice)
+
+API thực hiện gom nhóm (`group_by`) đa chiều kết hợp với bộ lọc (`filters`), tự động tính toán các độ đo (measures) và ánh xạ nhãn tên chiều từ các bảng danh mục.
+
+### Input
+
+```json
+{
+    "group_by": ["course_id", "scholarship_holder"],
+    "filters": {
+        "debtor": {
+            "type": "values",
+            "values": [false]
+        }
+    },
+    "include_records": false
+}
+```
+
+Các chiều `group_by` được hỗ trợ bao gồm:
+- `course_id`, `application_mode_id`, `daytime_evening_attendance_id`, `previous_qualification_id`
+- `gender_id`, `marital_status_id`, `nationality_id`, `displaced`, `international`, `age_at_enrollment`, `age_group` (`< 20`, `20 - 24`, `25 - 29`, `30+`)
+- `scholarship_holder`, `debtor`, `tuition_fees_up_to_date`, `educational_special_needs`
+- `unemployment_rate`, `inflation_rate`, `gdp`, `target_outcome_id`
+
+### Output (200 OK)
+
+```json
+{
+    "code": "OK",
+    "data": {
+        "group_by": ["course_id", "scholarship_holder"],
+        "stats": {
+            "count": 3921,
+            "dropouts": 1109,
+            "graduated": 2108,
+            "enrolled": 704,
+            "dropout_rate": 0.2828,
+            "graduation_rate": 0.5376,
+            "enrolled_rate": 0.1795,
+            "avg_admission_grade": 127.14,
+            "avg_1st_sem_grade": 10.89,
+            "avg_2nd_sem_grade": 10.58,
+            "avg_1st_sem_approval_rate": 0.7812,
+            "avg_2nd_sem_approval_rate": 0.7489
+        },
+        "groups": [
+            {
+                "dimensions": {
+                    "course_id": 9500,
+                    "course_id_label": "Nursing",
+                    "scholarship_holder": false,
+                    "scholarship_holder_label": "No Scholarship"
+                },
+                "metrics": {
+                    "count": 512,
+                    "dropouts": 89,
+                    "graduated": 340,
+                    "enrolled": 83,
+                    "dropout_rate": 0.1738,
+                    "graduation_rate": 0.6641,
+                    "enrolled_rate": 0.1621,
+                    "avg_admission_grade": 130.45,
+                    "avg_1st_sem_grade": 12.41,
+                    "avg_2nd_sem_grade": 12.15,
+                    "avg_1st_sem_approval_rate": 0.8612,
+                    "avg_2nd_sem_approval_rate": 0.8420
+                }
+            }
+        ]
+    },
+    "message": ""
+}
+```
+
+---
+
+## GET /records/metadata
+
+Trả về danh sách các chiều hỗ trợ `group_by` và từ điển tra cứu ID $\rightarrow$ Tên hiển thị của tất cả các bảng Helper (`courses`, `genders`, `marital_statuses`, `application_modes`, `attendances`, `previous_qualifications`, `nationalities`, `target_outcomes`).
+
+---
+
+## Hệ hỗ trợ quyết định (DSS Endpoints)
+
+### 1. GET /dss/model-info (và POST /dss/retrain)
+
+Trả về thông tin đánh giá mô hình dự báo nguy cơ bỏ học (`Accuracy`, `Precision`, `Recall`, `F1-Score`, `ROC-AUC`, `Confusion Matrix`) và bảng xếp hạng mức độ ảnh hưởng của các thuộc tính (`feature_importance`).
+
+### 2. POST /dss/predict (Dự báo cá nhân & Phân tích kịch bản What-If)
+
+Dự đoán xác suất bỏ học cho một sinh viên có sẵn trong Data Warehouse (qua `student_id`) hoặc một hồ sơ sinh viên giả định, đồng thời mô phỏng các kịch bản can thiệp (*What-If Scenarios*) và sinh khuyến nghị cho cố vấn học tập.
+
+#### Input (Theo `student_id` kèm tùy chọn ghi đè `overrides`)
+
+```json
+{
+    "student_id": 1,
+    "overrides": {
+        "scholarship_holder": true
+    }
+}
+```
+
+Hoặc truyền hồ sơ trực tiếp:
+
+```json
+{
+    "course_id": 9119,
+    "gender_id": 1,
+    "age_at_enrollment": 19,
+    "tuition_fees_up_to_date": false,
+    "debtor": true,
+    "scholarship_holder": false,
+    "admission_grade": 125.0,
+    "previous_qualification_grade": 130.0,
+    "cu_1st_sem_enrolled": 6,
+    "cu_1st_sem_approved": 2,
+    "cu_1st_sem_grade": 10.5,
+    "cu_2nd_sem_enrolled": 6,
+    "cu_2nd_sem_approved": 2,
+    "cu_2nd_sem_grade": 9.8
+}
+```
+
+#### Output (200 OK)
+
+Trả về `dropout_probability`, `risk_level` (`HIGH` / `MEDIUM` / `LOW`), `risk_factors`, `what_if_scenarios` (3 kịch bản: Hỗ trợ tài chính, Phụ đạo học thuật, Can thiệp toàn diện kèm độ giảm rủi ro `probability_delta`), và `recommendations`.
+
+### 3. POST /dss/early-warning (Danh sách cảnh báo sớm sinh viên đang theo học)
+
+Quét toàn bộ 794 sinh viên đang ở trạng thái `Enrolled` (`target_outcome_id = 2`), chấm điểm rủi ro bỏ học bằng mô hình DSS và trả về danh sách ưu tiên can thiệp sớm.
+
+#### Input
+
+```json
+{
+    "limit": 20,
+    "risk_level": "HIGH",
+    "course_id": 9119
+}
+```
+(Tất cả các trường đều là tùy chọn).

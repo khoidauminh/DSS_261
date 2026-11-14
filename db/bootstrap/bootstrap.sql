@@ -33,7 +33,8 @@ CREATE TABLE Dim_Demographics (
     Age_at_enrollment INT,
     International BOOL DEFAULT FALSE,
 
-    CONSTRAINT age_check CHECK (Age_at_enrollment > 0)
+    CONSTRAINT age_check CHECK (Age_at_enrollment > 0),
+    CONSTRAINT uq_dim_demographics UNIQUE (Marital_status_ID, Nationality_ID, Displaced, Gender_ID, Age_at_enrollment, International)
 );
 
 -- Helper tables for table 2
@@ -57,7 +58,14 @@ CREATE TABLE Dim_Socioeconomic (
     Debtor BOOLEAN DEFAULT FALSE,
     Tuition_fees_up_to_date BOOLEAN DEFAULT TRUE,
     Scholarship_holder BOOLEAN DEFAULT FALSE,
-    Educational_special_needs BOOLEAN DEFAULT FALSE
+    Educational_special_needs BOOLEAN DEFAULT FALSE,
+
+    CONSTRAINT uq_dim_socioeconomic UNIQUE (
+        Mother_qualification_ID, Father_qualification_ID,
+        Mother_occupation_ID, Father_occupation_ID,
+        Debtor, Tuition_fees_up_to_date,
+        Scholarship_holder, Educational_special_needs
+    )
 );
 
 -- Helper tables for table 3
@@ -97,6 +105,11 @@ CREATE TABLE Dim_Academic_Course (
         Previous_qualification_grade <= 200.0 AND 
         Admission_grade >= 0.0 AND 
         Admission_grade <= 200.0
+    ),
+    CONSTRAINT uq_dim_academic_course UNIQUE (
+        Course_ID, Application_mode_ID, Application_order,
+        Previous_qualification_ID, Previous_qualification_grade,
+        Admission_grade, Daytime_evening_attendance_ID
     )
 );
 
@@ -110,8 +123,9 @@ CREATE TABLE Dim_Macroeconomic (
     CONSTRAINT rate_check CHECK (
         Unemployment_rate >= -100.0 AND Unemployment_rate <= 100.0 AND
         Inflation_rate >= -100.0 AND Inflation_rate <= 100.0 AND
-        GDP >= 0.0
-    )
+        GDP >= -100.0 AND GDP <= 100.0
+    ),
+    CONSTRAINT uq_dim_macroeconomic UNIQUE (Unemployment_rate, Inflation_rate, GDP)
 );
 
 -- Helper tables for table 5
@@ -125,10 +139,10 @@ CREATE TABLE Target_Outcome(
 -- Grain: One row per student's overall record (suitable for the classification target)
 CREATE TABLE Fact_Academic_Record (
     Student_ID SERIAL PRIMARY KEY, 
-    Demographics_ID INT REFERENCES Dim_Demographics(Demographics_ID) UNIQUE,
-    Socioeconomic_ID INT REFERENCES Dim_Socioeconomic(Socioeconomic_ID) UNIQUE,
-    Academic_Course_ID INT REFERENCES Dim_Academic_Course(Academic_Course_ID) UNIQUE,
-    Macroeconomic_ID INT REFERENCES Dim_Macroeconomic(Macroeconomic_ID) UNIQUE,
+    Demographics_ID INT REFERENCES Dim_Demographics(Demographics_ID),
+    Socioeconomic_ID INT REFERENCES Dim_Socioeconomic(Socioeconomic_ID),
+    Academic_Course_ID INT REFERENCES Dim_Academic_Course(Academic_Course_ID),
+    Macroeconomic_ID INT REFERENCES Dim_Macroeconomic(Macroeconomic_ID),
 
     -- 1st Semester Metrics
     CU_1st_sem_credited INT,
