@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hệ Hỗ Trợ Quyết Định và Dự Báo Học Vụ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .tab-btn.active {
+            background-color: #1e40af;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+        .badge-high {
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        .badge-medium {
+            background-color: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+        .badge-low {
+            background-color: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-bold tracking-tight">Hệ Hỗ Trợ Quyết Định và Dự Báo Học Vụ</h1>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700">
+                <button onclick="switchTab('olap')" id="tab-btn-olap" class="tab-btn active text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition">
+                    Phân tích
+                </button>
+                <button onclick="switchTab('dss')" id="tab-btn-dss" class="tab-btn text-slate-300 hover:text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition">
+                    Dự báo
+                </button>
+                <button onclick="switchTab('early')" id="tab-btn-early" class="tab-btn text-slate-300 hover:text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition">
+                    Cảnh báo sớm
+                </button>
+                <button onclick="switchTab('dw')" id="tab-btn-dw" class="tab-btn text-slate-300 hover:text-white text-xs sm:text-sm font-medium px-3.5 py-2 rounded-lg transition">
+                    Kho dữ liệu và Mô hình
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- ======================================================================= -->
+        <!-- TAB 1: OLAP ANALYTICS & CUBE EXPLORER                                   -->
+        <!-- ======================================================================= -->
+        <section id="tab-olap" class="space-y-6">
+            <!-- Control Bar: Slice & Dice + Roll-up / Drill-down -->
+            <div class="card p-5">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-100">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Bộ điều khiển OLAP</h2>
+                        <p class="text-xs text-slate-500">Chọn các chiều phân tích (Dimensions) và bộ lọc (Filters) để tổng hợp dữ liệu.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="resetOlapFilters()" class="text-xs font-medium px-3 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50">
+                            Đặt lại bộ lọc
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                    <!-- Group 1: Roll-up / Drill-down -->
+                    <div class="lg:col-span-5 bg-blue-50/60 border border-blue-100 rounded-xl p-3.5 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-blue-900">Group-by & Drill-down</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Dimension 1 -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Group-by</label>
+                                <select id="olap-dim-1" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="course_id">Ngành học (Course)</option>
+                                    <option value="scholarship_holder">Học bổng (Scholarship)</option>
+                                    <option value="debtor">Nợ học phí (Debtor)</option>
+                                    <option value="tuition_fees_up_to_date">Đóng học phí đúng hạn</option>
+                                    <option value="gender_id">Giới tính (Gender)</option>
+                                    <option value="age_group">Nhóm tuổi (Age Group)</option>
+                                    <option value="daytime_evening_attendance_id">Buổi học (Sáng / Tối)</option>
+                                    <option value="marital_status_id">Tình trạng hôn nhân</option>
+                                    <option value="application_mode_id">Phương thức xét tuyển</option>
+                                    <option value="gdp">Tăng trưởng GDP (%)</option>
+                                    <option value="unemployment_rate">Tỷ lệ thất nghiệp (%)</option>
+                                </select>
+                            </div>
+
+                            <!-- Dimension 2 (Drill-down) -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Drill-down</label>
+                                <select id="olap-dim-2" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Không</option>
+                                    <option value="scholarship_holder">Học bổng (Scholarship)</option>
+                                    <option value="debtor">Nợ học phí (Debtor)</option>
+                                    <option value="gender_id">Giới tính (Gender)</option>
+                                    <option value="tuition_fees_up_to_date">Đóng học phí đúng hạn</option>
+                                    <option value="age_group">Nhóm tuổi (Age Group)</option>
+                                    <option value="daytime_evening_attendance_id">Buổi học (Sáng / Tối)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Group 2: Slice & Dice Filters -->
+                    <div class="lg:col-span-7 bg-slate-50/90 border border-slate-200/80 rounded-xl p-3.5 space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-800">Slice & Dice</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                            <!-- Slice Filter: Course -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Ngành học</label>
+                                <select id="olap-filter-course" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white">
+                                    <option value="">Tất cả</option>
+                                </select>
+                            </div>
+
+                            <!-- Dice Filter: Gender -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Giới tính</label>
+                                <select id="olap-filter-gender" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white">
+                                    <option value="">Tất cả</option>
+                                    <option value="1">Nam (Male)</option>
+                                    <option value="0">Nữ (Female)</option>
+                                </select>
+                            </div>
+
+                            <!-- Dice Filter: Scholarship -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Học bổng</label>
+                                <select id="olap-filter-scholarship" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white">
+                                    <option value="">Tất cả</option>
+                                    <option value="true">Có học bổng</option>
+                                    <option value="false">Không có học bổng</option>
+                                </select>
+                            </div>
+
+                            <!-- Dice Filter: Debtor -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Nợ học phí</label>
+                                <select id="olap-filter-debtor" onchange="runOlapQuery()" class="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-2 bg-white">
+                                    <option value="">Tất cả</option>
+                                    <option value="false">Không nợ học phí</option>
+                                    <option value="true">Đang nợ học phí</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 KPI Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card p-4 border-l-4 border-l-blue-600">
+                    <div class="text-xs font-medium text-slate-500">Tổng số Sinh viên</div>
+                    <div id="kpi-total" class="text-2xl font-bold text-slate-900 mt-1">--</div>
+                    <div id="kpi-enrolled-sub" class="text-xs text-slate-500 mt-1">Đang theo học (Enrolled): --</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-red-600">
+                    <div class="text-xs font-medium text-slate-500">Tỷ lệ Bỏ học</div>
+                    <div id="kpi-dropout-rate" class="text-2xl font-bold text-red-600 mt-1">--%</div>
+                    <div id="kpi-dropout-count" class="text-xs text-slate-500 mt-1">Số lượng bỏ học: -- SV</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-emerald-600">
+                    <div class="text-xs font-medium text-slate-500">Tỷ lệ Tốt nghiệp</div>
+                    <div id="kpi-grad-rate" class="text-2xl font-bold text-emerald-600 mt-1">--%</div>
+                    <div id="kpi-grad-count" class="text-xs text-slate-500 mt-1">Số lượng tốt nghiệp: -- SV</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-amber-500">
+                    <div class="text-xs font-medium text-slate-500">Điểm TB Học kỳ 1 & Học kỳ 2</div>
+                    <div id="kpi-avg-grades" class="text-2xl font-bold text-slate-900 mt-1">-- / --</div>
+                    <div id="kpi-approval-rate" class="text-xs text-slate-500 mt-1">Tỷ lệ qua môn Học kỳ 2: --%</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-800">Phân bố Kết quả Học tập</h3>
+                        <span class="text-xs text-slate-400">OLAP Cube Measure</span>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="olapOutcomeChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card p-5">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-bold text-slate-800">Tỷ lệ Bỏ học (%) so với Tỷ lệ Qua môn Học kỳ 2 (%)</h3>
+                        <span class="text-xs text-slate-400">So sánh tương quan</span>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="olapRateChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed OLAP Table -->
+            <div class="card overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800">Bảng tổng hợp OLAP</h3>
+                        <p class="text-xs text-slate-500">Chi tiết các độ đo (Measures) trên từng tổ hợp chiều (Dimensions)</p>
+                    </div>
+                    <span id="olap-group-count" class="text-xs font-medium px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md">0 nhóm</span>
+                </div>
+                <div class="overflow-x-auto max-h-96">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-slate-50 text-slate-600 sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 font-semibold">Nhóm</th>
+                                <th class="py-3 px-3 font-semibold text-right">Tổng SV</th>
+                                <th class="py-3 px-3 font-semibold text-right">Bỏ học</th>
+                                <th class="py-3 px-3 font-semibold text-right">Tỷ lệ Bỏ học</th>
+                                <th class="py-3 px-3 font-semibold text-right">Tốt nghiệp</th>
+                                <th class="py-3 px-3 font-semibold text-right">Đang học</th>
+                                <th class="py-3 px-3 font-semibold text-right">Điểm ĐV TB</th>
+                                <th class="py-3 px-3 font-semibold text-right">Điểm Kỳ 1</th>
+                                <th class="py-3 px-3 font-semibold text-right">Điểm Kỳ 2</th>
+                                <th class="py-3 px-4 font-semibold text-right">Tỉ lệ qua môn Học kỳ 2</th>
+                            </tr>
+                        </thead>
+                        <tbody id="olap-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================= -->
+        <!-- TAB 2: DECISION SUPPORT SYSTEM (PREDICTION & WHAT-IF SIMULATOR)         -->
+        <!-- ======================================================================= -->
+        <section id="tab-dss" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left Column: Student Lookup & What-If Input Form (5 cols) -->
+                <div class="lg:col-span-5 card p-5 space-y-4">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h2 class="text-base font-bold text-slate-800 mt-0.5">Hồ sơ Sinh viên</h2>
+                        <p class="text-xs text-slate-500">Nhập các thông tin của sinh viên để thực hiện phân tích.</p>
+                    </div>
+
+                    <!-- Quick Lookup by Student ID -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                        <label class="block text-xs font-semibold text-slate-700">Tra cứu nhanh Sinh viên từ Kho dữ liệu</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="dss-student-id" min="1" value="855" placeholder="Nhập Student ID"
+                                class="flex-1 text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                            <button onclick="loadStudentIntoDss()" class="text-xs font-semibold px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white">
+                                Tra cứu
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-1">
+                            <span class="text-[11px] text-slate-500">Mẫu kiểm tra nhanh:</span>
+                            <button onclick="quickSelectStudent(855)" class="text-[11px] px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 hover:bg-red-100">SV #855 (Đang học - Nguy cơ rất cao)</button>
+                            <button onclick="quickSelectStudent(1)" class="text-[11px] px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">SV #1 (Không tích lũy tín chỉ)</button>
+                            <button onclick="quickSelectStudent(2)" class="text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100">SV #2 (Điểm khá)</button>
+                        </div>
+                    </div>
+
+                    <!-- Form Inputs for Simulation -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="sm:col-span-2">
+                            <label class="block font-semibold text-slate-700 mb-1">Ngành đào tạo (Course)</label>
+                            <select id="dss-course" class="w-full rounded-lg border border-slate-300 px-2.5 py-2 bg-white"></select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Giới tính</label>
+                            <select id="dss-gender" class="w-full rounded-lg border border-slate-300 px-2.5 py-2 bg-white">
+                                <option value="1">Nam (Male)</option>
+                                <option value="0">Nữ (Female)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Tuổi nhập học</label>
+                            <input type="number" id="dss-age" value="19" min="17" max="70" class="w-full rounded-lg border border-slate-300 px-2.5 py-2" />
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Điểm trúng tuyển (0-200)</label>
+                            <input type="number" step="0.5" id="dss-adm-grade" value="125.0" min="0" max="200" class="w-full rounded-lg border border-slate-300 px-2.5 py-2" />
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Điểm bằng cấp trước (0-200)</label>
+                            <input type="number" step="0.5" id="dss-prev-grade" value="130.0" min="0" max="200" class="w-full rounded-lg border border-slate-300 px-2.5 py-2" />
+                        </div>
+
+                        <!-- Financial switches -->
+                        <div class="sm:col-span-2 bg-blue-50/60 p-3 rounded-lg border border-blue-100 grid grid-cols-3 gap-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="dss-tuition-ok" checked class="rounded text-blue-600" />
+                                <span class="font-medium text-slate-700">Đóng học phí đúng hạn</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="dss-debtor" class="rounded text-red-600" />
+                                <span class="font-medium text-slate-700">Đang nợ học phí</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="dss-scholarship" class="rounded text-emerald-600" />
+                                <span class="font-medium text-slate-700">Có học bổng</span>
+                            </label>
+                        </div>
+
+                        <!-- 1st Semester -->
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-800">Học kỳ 1 (1st Sem)</div>
+                            <div>
+                                <label class="text-slate-600">Số môn đăng ký:</label>
+                                <input type="number" id="dss-s1-enr" value="6" min="0" max="25" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                            <div>
+                                <label class="text-slate-600">Số môn đạt (Approved):</label>
+                                <input type="number" id="dss-s1-app" value="5" min="0" max="25" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                            <div>
+                                <label class="text-slate-600">Điểm TB Kỳ 1 (0-20):</label>
+                                <input type="number" step="0.1" id="dss-s1-grade" value="12.5" min="0" max="20" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                        </div>
+
+                        <!-- 2nd Semester -->
+                        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="font-bold text-slate-800">Học kỳ 2 (2nd Sem)</div>
+                            <div>
+                                <label class="text-slate-600">Số môn đăng ký:</label>
+                                <input type="number" id="dss-s2-enr" value="6" min="0" max="25" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                            <div>
+                                <label class="text-slate-600">Số môn đạt (Approved):</label>
+                                <input type="number" id="dss-s2-app" value="5" min="0" max="25" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                            <div>
+                                <label class="text-slate-600">Điểm TB Kỳ 2 (0-20):</label>
+                                <input type="number" step="0.1" id="dss-s2-grade" value="12.5" min="0" max="20" class="w-full mt-0.5 rounded border border-slate-300 px-2 py-1.5 bg-white" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="runDssCustomPrediction()" class="w-full py-2.5 px-4 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-semibold text-xs shadow-sm transition">
+                        Phân tích
+                    </button>
+                </div>
+
+                <!-- Right Column: Prediction Output, Risk Diagnosis & What-If Scenarios (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Main Risk Score Card -->
+                    <div class="card p-5">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-slate-800">Kết quả Đánh giá khả năng Bỏ học</h3>
+                                    <span id="dss-out-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full badge-high">HIGH RISK</span>
+                                </div>
+                                <p id="dss-out-subtitle" class="text-xs text-slate-500 mt-0.5">Sinh viên #855 - Ngành: Informatics Engineering</p>
+                            </div>
+                            <div class="text-left sm:text-right">
+                                <div class="text-xs text-slate-500">Khả năng bỏ học</div>
+                                <div id="dss-out-prob" class="text-3xl font-extrabold text-red-600">--%</div>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar Gauge -->
+                        <div class="mt-4">
+                            <div class="flex justify-between text-[11px] font-medium text-slate-500 mb-1">
+                                <span>An toàn (0% - 35%)</span>
+                                <span>Cần theo dõi (35% - 65%)</span>
+                                <span>Nguy cơ bỏ học cao (65% - 100%)</span>
+                            </div>
+                            <div class="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                                <div id="dss-prob-bar" class="h-full bg-red-600 transition-all duration-500" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Risk Factors & Recommendations -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                            <div class="bg-red-50/50 border border-red-100 rounded-xl p-3.5">
+                                <h4 class="text-xs font-bold text-red-900 mb-2">Các yếu tố rủi ro phát hiện trên hồ sơ</h4>
+                                <ul id="dss-risk-factors" class="space-y-1.5 text-xs text-red-800 list-disc list-inside"></ul>
+                            </div>
+                            <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3.5">
+                                <h4 class="text-xs font-bold text-emerald-900 mb-2">Khuyến nghị</h4>
+                                <ul id="dss-recommendations" class="space-y-1.5 text-xs text-emerald-800 list-disc list-inside"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What-If Scenario Comparison Card -->
+                    <div class="card p-5 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-800">Mô phỏng các khả năng can thiệp</h3>
+                                <p class="text-xs text-slate-500">So sánh xác suất bỏ học hiện tại với các phương án hỗ trợ của Nhà trường.</p>
+                            </div>
+                        </div>
+
+                        <div id="dss-scenarios-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+
+                        <div class="h-56 pt-2">
+                            <canvas id="dssWhatIfChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================= -->
+        <!-- TAB 3: EARLY WARNING SYSTEM FOR ENROLLED STUDENTS                       -->
+        <!-- ======================================================================= -->
+        <section id="tab-early" class="hidden space-y-6">
+            <!-- Summary Banner -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="card p-4 border-l-4 border-l-slate-700">
+                    <div class="text-xs text-slate-500 font-medium">Tổng số SV đang theo học (Enrolled)</div>
+                    <div id="ew-total" class="text-2xl font-bold text-slate-900 mt-1">794</div>
+                    <div class="text-xs text-slate-400 mt-1">Đang chờ xét tốt nghiệp/học tiếp</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-red-600">
+                    <div class="text-xs text-slate-500 font-medium">Nguy cơ Bỏ học CAO (>= 65%)</div>
+                    <div id="ew-high" class="text-2xl font-bold text-red-600 mt-1">--</div>
+                    <div class="text-xs text-red-600/80 mt-1">Cần can thiệp</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-amber-500">
+                    <div class="text-xs text-slate-500 font-medium">Nguy cơ Bỏ học TRUNG BÌNH (35% - 65%)</div>
+                    <div id="ew-medium" class="text-2xl font-bold text-amber-600 mt-1">--</div>
+                    <div class="text-xs text-amber-600/80 mt-1">Cần theo dõi</div>
+                </div>
+                <div class="card p-4 border-l-4 border-l-emerald-600">
+                    <div class="text-xs text-slate-500 font-medium">Nguy cơ Bỏ học THẤP (< 35%)</div>
+                    <div id="ew-low" class="text-2xl font-bold text-emerald-600 mt-1">--</div>
+                    <div class="text-xs text-emerald-600/80 mt-1">Tiến độ học tập ổn định</div>
+                </div>
+            </div>
+
+            <!-- Filter Bar & Early Warning Table -->
+            <div class="card overflow-hidden">
+                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Danh sách Cảnh báo Sớm Sinh viên Đang học</h2>
+                        <p class="text-xs text-slate-500">Xếp hạng sinh viên đang học (Enrolled) theo xác suất bỏ học giảm dần từ mô hình DSS.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <select id="ew-filter-course" onchange="ewCurrentPage=1; loadEarlyWarningList()" class="text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white">
+                            <option value="">Tất cả</option>
+                        </select>
+                        <select id="ew-filter-risk" onchange="ewCurrentPage=1; loadEarlyWarningList()" class="text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white">
+                            <option value="">Tất cả mức độ rủi ro</option>
+                            <option value="HIGH">Nguy cơ CAO (HIGH)</option>
+                            <option value="MEDIUM">Nguy cơ TRUNG BÌNH (MEDIUM)</option>
+                            <option value="LOW">Nguy cơ THẤP (LOW)</option>
+                        </select>
+                        <select id="ew-limit" onchange="ewCurrentPage=1; loadEarlyWarningList()" class="text-xs rounded-lg border border-slate-300 px-3 py-2 bg-white">
+                            <option value="all">Hiển thị tất cả</option>
+                            <option value="30">Top 30</option>
+                            <option value="100">Top 100</option>
+                            <option value="300">Top 300</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-[520px]">
+                    <table class="w-full text-center border-collapse text-xs">
+                        <thead class="bg-slate-50 text-slate-600 sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4 font-semibold">Mã SV</th>
+                                <th class="py-3 px-3 font-semibold">Ngành học</th>
+                                <th class="py-3 px-2 font-semibold">Tuổi/Giới tính</th>
+                                <th class="py-3 px-3 font-semibold">Tài chính</th>
+                                <th class="py-3 px-3 font-semibold text-center whitespace-nowrap">Kỳ 1<br><span class="text-[11px] font-medium text-slate-500">(Đạt/Đăng ký - Điểm)</span></th>
+                                <th class="py-3 px-3 font-semibold text-center whitespace-nowrap">Kỳ 2<br><span class="text-[11px] font-medium text-slate-500">(Đạt/Đăng ký - Điểm)</span></th>
+                                <th class="py-3 px-3 font-semibold text-center whitespace-nowrap">Bỏ học</th>
+                                <th class="py-3 px-3 font-semibold">Mức độ rủi ro</th>
+                                <th class="py-3 px-3 font-semibold">Nội dung</th>
+                                <th class="py-3 px-4 font-semibold text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ew-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Bar -->
+                <div class="px-5 py-3 border-t border-slate-100 bg-slate-50/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div id="ew-pagination-info" class="text-slate-600">Đang hiển thị 0/0 sinh viên</div>
+                    <div class="flex items-center gap-2">
+                        <select id="ew-page-size" onchange="ewCurrentPage=1; loadEarlyWarningList()" class="rounded-lg border border-slate-300 px-2.5 py-1.5 bg-white">
+                            <option value="20">20/trang</option>
+                            <option value="30" selected>30/trang</option>
+                            <option value="50">50/trang</option>
+                            <option value="100">100/trang</option>
+                        </select>
+                        <button id="ew-prev-btn" onclick="changeEwPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+                            ← Trước
+                        </button>
+                        <span id="ew-page-label" class="font-semibold text-slate-700 px-2">Trang 1/1</span>
+                        <button id="ew-next-btn" onclick="changeEwPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed font-medium">
+                            Sau →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================================================================= -->
+        <!-- TAB 4: DATA WAREHOUSE EXPLORER, ADD RECORD & MODEL METRICS              -->
+        <!-- ======================================================================= -->
+        <section id="tab-dw" class="hidden space-y-6">
+            <!-- Model Metrics & Feature Importance -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-5 card p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Đánh giá Độ tin cậy của Mô hình DSS</h3>
+                        </div>
+                        <button onclick="retrainDssModel()" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-900 text-white">
+                            Huấn luyện lại
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">Accuracy</div>
+                            <div id="m-acc" class="text-lg font-bold text-slate-900">--%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">Precision</div>
+                            <div id="m-prec" class="text-lg font-bold text-blue-700">--%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">Recall</div>
+                            <div id="m-rec" class="text-lg font-bold text-indigo-700">--%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">F1-Score</div>
+                            <div id="m-f1" class="text-lg font-bold text-emerald-700">--%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">ROC-AUC</div>
+                            <div id="m-auc" class="text-lg font-bold text-amber-600">--%</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                            <div class="text-[11px] text-slate-500">Mẫu Train / Test</div>
+                            <div id="m-split" class="text-sm font-bold text-slate-800 mt-1">-- / --</div>
+                        </div>
+                    </div>
+
+                    <!-- Confusion Matrix -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                        <div class="text-xs font-bold text-slate-700 mb-2">Ma trận Nhầm lẫn (Confusion Matrix)</div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="p-2.5 rounded-lg bg-white border border-slate-200">
+                                <span class="text-slate-500 block">Dự báo đúng Bỏ học:</span>
+                                <span id="cm-tp" class="font-bold text-emerald-600 text-sm">--</span>
+                            </div>
+                            <div class="p-2.5 rounded-lg bg-white border border-slate-200">
+                                <span class="text-slate-500 block">Dự báo đúng Tốt nghiệp:</span>
+                                <span id="cm-tn" class="font-bold text-blue-600 text-sm">--</span>
+                            </div>
+                            <div class="p-2.5 rounded-lg bg-white border border-slate-200">
+                                <span class="text-slate-500 block">Báo động giả:</span>
+                                <span id="cm-fp" class="font-bold text-amber-600 text-sm">--</span>
+                            </div>
+                            <div class="p-2.5 rounded-lg bg-white border border-slate-200">
+                                <span class="text-slate-500 block">Bỏ sót rủi ro:</span>
+                                <span id="cm-fn" class="font-bold text-red-600 text-sm">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance Chart -->
+                <div class="lg:col-span-7 card p-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Xếp hạng Mức độ ảnh hưởng của các Thuộc tính đến việc học</h3>
+                            <p class="text-xs text-slate-500">Đỏ: Làm tăng nguy cơ bỏ học.</p>
+                            <p class="text-xs text-slate-500">Xanh: Giúp giảm nguy cơ bỏ học.</p>
+                        </div>
+                    </div>
+                    <div class="h-80">
+                        <canvas id="featureImportanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Record to Data Warehouse + Browse Records -->
+            <div class="card p-5 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800">Thêm Sinh viên mới vào Kho Dữ liệu</h3>
+                    </div>
+                    <span id="insert-status-msg" class="text-xs font-semibold text-emerald-600"></span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+                    <div class="col-span-2">
+                        <label class="font-semibold text-slate-700 block mb-1">Ngành học</label>
+                        <select id="ins-course" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Giới tính</label>
+                        <select id="ins-gender" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 bg-white">
+                            <option value="1">Nam</option>
+                            <option value="0">Nữ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Tuổi nhập học</label>
+                        <input type="number" id="ins-age" value="19" min="16" max="100" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Điểm trúng tuyển</label>
+                        <input type="number" step="0.5" id="ins-adm" value="135.0" min="0" max="200" required class="w-full rounded-lg border border-slate-300 px-2.5 py-1.5" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Số môn Đạt Kỳ 1/Kỳ 2</label>
+                        <div class="flex gap-1">
+                            <input type="number" id="ins-app1" value="6" min="0" required class="w-1/2 rounded-lg border border-slate-300 px-2 py-1.5" />
+                            <input type="number" id="ins-app2" value="6" min="0" required class="w-1/2 rounded-lg border border-slate-300 px-2 py-1.5" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Tình trạng hôn nhân</label>
+                        <select id="ins-marital" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Quốc tịch</label>
+                        <select id="ins-nationality" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Phương thức XT</label>
+                        <select id="ins-app-mode" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Thứ tự NV</label>
+                        <input type="number" id="ins-app-order" value="1" min="1" max="20" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Buổi học (Sáng/Tối)</label>
+                        <select id="ins-attendance" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white">
+                            <option value="1">Buổi sáng</option>
+                            <option value="0">Buổi tối</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Điểm bằng trước</label>
+                        <input type="number" step="0.5" id="ins-prev-grade" value="135.0" min="0" max="200" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Số môn ĐK Kỳ 1</label>
+                        <input type="number" id="ins-enr1" value="6" min="0" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Điểm TB Kỳ 1</label>
+                        <input type="number" step="0.1" id="ins-grade1" value="13.5" min="0" max="20" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Số môn ĐK Kỳ 2</label>
+                        <input type="number" id="ins-enr2" value="6" min="0" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Điểm TB Kỳ 2</label>
+                        <input type="number" step="0.1" id="ins-grade2" value="13.5" min="0" max="20" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white" />
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Trạng thái kết quả</label>
+                        <select id="ins-target" required class="w-full rounded-lg border border-slate-300 px-2 py-1.5 bg-white">
+                            <option value="2">Enrolled (Đang học)</option>
+                            <option value="1">Graduate (Tốt nghiệp)</option>
+                            <option value="0">Dropout (Bỏ học)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700 block mb-1">Thất nghiệp/Lạm phát/GDP (%)</label>
+                        <div class="flex gap-1">
+                            <input type="number" step="0.1" id="ins-unemp" value="10.8" min="-100" max="100" required title="Unemployment rate (-100..100)" class="w-1/3 rounded-lg border border-slate-300 px-1.5 py-1.5 bg-white" />
+                            <input type="number" step="0.1" id="ins-infl" value="1.4" min="-100" max="100" required title="Inflation rate (-100..100)" class="w-1/3 rounded-lg border border-slate-300 px-1.5 py-1.5 bg-white" />
+                            <input type="number" step="0.1" id="ins-gdp" value="1.7" min="-100" max="100" required title="GDP (-100..100)" class="w-1/3 rounded-lg border border-slate-300 px-1.5 py-1.5 bg-white" />
+                        </div>
+                    </div>
+
+                    <div class="col-span-2 sm:col-span-4 lg:col-span-6 flex flex-wrap gap-4 pt-2 border-t border-slate-100">
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-tuition-ok" checked class="rounded text-blue-600" />
+                            <span>Đóng học phí đúng hạn</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-debtor" class="rounded text-red-600" />
+                            <span>Đang nợ học phí</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-scholarship" class="rounded text-emerald-600" />
+                            <span>Có học bổng</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-displaced" class="rounded text-slate-600" />
+                            <span>Sinh viên xa nhà</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-international" class="rounded text-slate-600" />
+                            <span>Sinh viên quốc tế</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer">
+                            <input type="checkbox" id="ins-special-needs" class="rounded text-slate-600" />
+                            <span>Nhu cầu giáo dục đặc biệt</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="insertNewStudentRecord()" class="text-xs font-semibold px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+                        Lưu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-10 py-4 text-center text-xs text-slate-500">
+        Bài tập lớn Kho dữ liệu và Hệ hỗ trợ Quyết định (CO4031) - Trường Đại học Bách Khoa - ĐHQG TP.HCM
+    </footer>
+
+    <script src="/app.js"></script>
+</body>
+</html>

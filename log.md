@@ -16,8 +16,9 @@ Thông tin chung về công việc BTL.
 | :-: | - | - |
 | ✅ | Tìm dataset | [Predict Students' Dropout and Academic Success](https://archive.ics.uci.edu/dataset/697/predict+students+dropout+and+academic+success) |
 | ✅ | Chọn tech stack | Flask (Python), psycopg2-binary (PostgreSQL) |
-| ✅ | Tạo schema | Snowflake schema |
-| ✅ | Viết script bootstrap | |
-| ✅ | Viết ETL | |
-| ⏳ | Chọn tech DSS | |
-| ⏳ | Xây dựng DSS | |
+| ✅ | Tạo schema | Snowflake schema (Deduplicated Dimensions) |
+| ✅ | Viết script bootstrap | `db/bootstrap/run.py` & `bootstrap.sql` |
+| ✅ | Viết ETL | Extract, Clean, Deduplicate Dimensions & Load |
+| ✅ | Chọn tech DSS | L2-Regularized Logistic Regression + What-If Simulation Engine |
+| ✅ | Xây dựng DSS & OLAP Cube | `/records/olap/cube`, `/dss/predict`, `/dss/early-warning`, `/dss/model-info` |
+| ✅ | Xây dựng Frontend Dashboard | `frontend/index.html` + `frontend/app.js` (TailwindCSS + Chart.js) |

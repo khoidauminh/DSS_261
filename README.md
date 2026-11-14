@@ -10,7 +10,7 @@ Chỉnh sửa port và mật khẩu postgres tùy ý
 
 ### 3. Tạo env.json
 
-Trong thư mục gốc của repo (có chứa README.md này), tạo file `repo.json` với template như sau:
+Trong thư mục gốc của repo (có chứa README.md này), tạo file `env.json` với template như sau:
 
 ```json
 {
@@ -28,7 +28,7 @@ Trong thư mục gốc của repo (có chứa README.md này), tạo file `repo.
 python -m pip install -r requirements.txt
 ```
 
-### 5. Chạy bootstrap
+### 5. Chạy bootstrap (ETL Pipeline & Khởi tạo Snowflake Schema)
 
 **‼️LỆNH SẼ XOÁ MỌI SCHEMA VÀ BẢNG TRONG DATABASE student_performance ĐỂ NHẬP LẠI DỮ LIỆU!!!**
 
@@ -38,12 +38,10 @@ python -m pip install -r requirements.txt
 python -m db.bootstrap.run
 ```
 
-### 5. Chạy backend [Hướng dẫn API](backend/API.md)
+### 6. Chạy Backend & Frontend Dashboard [Hướng dẫn API](backend/API.md)
 
 ```py
 python -m backend.server
 ```
 
-## FRONTEND
-
-TODO
+Sau khi server khởi chạy, mở trình duyệt truy cập: `http://127.0.0.1:5000/`
